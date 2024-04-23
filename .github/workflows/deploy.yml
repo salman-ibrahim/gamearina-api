@@ -1,0 +1,80 @@
+on:
+    push:
+      branches:
+        - client-dev  # Change this to your main branch
+  
+  name: 🚀 Deploy to CPANEL
+  
+  jobs:
+    web-deploy:
+      name: 🎉 Deploy
+      runs-on: ubuntu-latest
+  
+      steps:
+    
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v2
+        
+    #   - name: 🔔 Slack Notify Build Started
+    #     uses: rtCamp/action-slack-notify@v2
+    #     env:
+    #       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    #       SLACK_USERNAME: "Build Bot"
+    #       SLACK_ICON_EMOJI: ":rocket:"
+    #       SLACK_MESSAGE: "Build has started for *Rewardy Admin*"
+    #       SLACK_COLOR: ${{ job.status }}
+    #       SLACK_TITLE: "Build Started"
+    #       SLACK_FOOTER: "Powered By Game Arina Build Bot"
+
+      - name: 📦 Install Node.js and Node v18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+  
+      - name: 📦 Install Composer and PHP 8.2
+        run: |
+          sudo apt-get install software-properties-common
+          sudo add-apt-repository ppa:ondrej/php -y
+          sudo apt-get update
+          sudo apt-get install php8.2 php8.2-mbstring php8.2-xml
+          sudo apt-get install composer -y
+  
+      - name: 📦 Install project dependencies and build
+        run: |
+          composer install --no-dev --optimize-autoloader
+  
+      - name: Directory permissions
+        run: |
+          chmod -R 777 bootstrap/cache
+  
+      - name: 📂 Sync files
+        uses: SamKirkland/FTP-Deploy-Action@4.3.2
+        with:
+          server: ftp.jazbastudio.com
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+
+    #   - name: 🔔 Slack Notify Build Succeeded
+    #     if: success()
+    #     uses: rtCamp/action-slack-notify@v2
+    #     env:
+    #       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    #       SLACK_USERNAME: "Build Bot"
+    #       SLACK_ICON_EMOJI: ":raised_hands:"
+    #       SLACK_MESSAGE: "Build has succesfully completed for *Rewardy Admin* with *${{ job.status }}* status"
+    #       SLACK_COLOR: ${{ job.status }}
+    #       SLACK_TITLE: "Build Completed"
+    #       SLACK_FOOTER: "Powered By Game Arina Build Bot"
+      
+    #   - name: 🔔 Slack Notify Build Failed
+    #     if: failure()
+    #     uses: rtCamp/action-slack-notify@v2
+    #     env:
+    #       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    #       SLACK_USERNAME: "Build Bot"
+    #       SLACK_ICON_EMOJI: ":boom:"
+    #       SLACK_MESSAGE: "Build for *Rewardy Admin* was unable to completed becaue the workflow *${{ job.status }}*"
+    #       SLACK_COLOR: ${{ job.status }}
+    #       SLACK_TITLE: "Build Failed"
+    #       SLACK_FOOTER: "Powered By Game Arina Build Bot"
+  
