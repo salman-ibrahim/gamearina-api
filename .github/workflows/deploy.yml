@@ -1,7 +1,7 @@
 on:
     push:
       branches:
-        - client-dev  # Change this to your main branch
+        - main  # Change this to your main branch
   
   name: 🚀 Deploy to CPANEL
   
